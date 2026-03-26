@@ -1,4 +1,7 @@
 class Machine {
+
+  static const int COFFEE_BEANS_FOR_EXPRESSO = 50;
+  static const int WATER_FOR_EXPRESSO = 100;
   
   int _coffeeBeans;
   int _milk;
@@ -25,6 +28,23 @@ class Machine {
   int get cash {return _cash;}
   set cash (int value) {
     _cash = value;
+  }
+
+  bool isAvailable() {
+    return _coffeeBeans >= COFFEE_BEANS_FOR_EXPRESSO && _water >= WATER_FOR_EXPRESSO;
+  }
+
+  void _substractResources() {
+      _coffeeBeans -= COFFEE_BEANS_FOR_EXPRESSO;
+      _water -= WATER_FOR_EXPRESSO;
+  }
+
+  bool makingCoffee() {
+    if (isAvailable()) {
+      _substractResources();
+      return true;
+    }
+    return false;
   }
 
 }
