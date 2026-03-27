@@ -47,4 +47,9 @@ class Machine {
     return false;
   }
 
+  void addResources(int coffeeBeans, int water) {
+    _coffeeBeans += coffeeBeans;
+    _water += water;
+  }
+
 }

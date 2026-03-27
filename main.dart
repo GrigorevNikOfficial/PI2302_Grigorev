@@ -11,29 +11,16 @@ void main() {
   Machine machine = Machine(initialCoffeeBeans, initialMilk, initialWater, initialCash);
 
   while (true) {
-    print("Доступные команды:");
-
-    print("1. Сделать кофе");
-    print("2. Добавить ресурсы");
-    print("3. Выйти");
-
-    stdout.write("Введите номер команды: ");
-
+    _printMenu();
     String input = stdin.readLineSync() ?? "";
   
     switch (input) {
       case "1":
-        if (machine.makingCoffee()) {
-          print("Кофе готов!\n");
-        } else {
-          print("Недостаточно ресурсов для приготовления кофе.\n");
-        }
+        _makeCoffeeVariant1(machine);
         break;
 
       case "2":
-        machine.coffeeBeans += initialCoffeeBeans;
-        machine.water += initialWater;
-        print("Ресурсы добавлены. Текущие запасы: ${machine.coffeeBeans} кофе, ${machine.water} воды.\n");
+        _makeCoffeeVariant2(machine, initialCoffeeBeans, initialWater);
         break;
 
       case "3":
@@ -45,4 +32,21 @@ void main() {
     }
   }
 
+}
+
+void _printMenu() {
+  print('Доступные команды:');
+  print('1. Сделать кофе');
+  print('2. Добавить ресурсы');
+  print('3. Выйти');
+  stdout.write('Введите номер команды: ');
+}
+
+void _makeCoffeeVariant1(Machine machine) {
+  (machine.makingCoffee()) ? print("Кофе готов!\n") : print("Недостаточно ресурсов для приготовления кофе.\n");
+}
+
+void _makeCoffeeVariant2(Machine machine, initialCoffeeBeans, initialWater) {
+  machine.addResources(initialCoffeeBeans, initialWater);
+        print("Ресурсы добавлены. Текущие запасы: ${machine.coffeeBeans} кофе, ${machine.water} воды.\n");
 }
