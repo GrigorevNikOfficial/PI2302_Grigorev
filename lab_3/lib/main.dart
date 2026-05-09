@@ -139,6 +139,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
+
+            ElevatedButton(
+              onPressed: _resetCounter,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+              ),
+              child: Text('Сбросить', style: TextStyle(color: Colors.grey)),
+            ),
           ],
         ),
       ),
