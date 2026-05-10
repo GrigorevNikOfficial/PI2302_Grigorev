@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'simple_list.dart';
 import "infinity_list.dart";
+import 'infinity_math_list.dart';
 
 void main() {
   runApp(const MyApp());
@@ -119,6 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Divider(height: 1),
                   ListTile(
                     title: const Text('Степени числа 2'),
+                    onTap:() => _openPage(context, InfinityMathList()),
                   ),
                 ],
               ),
