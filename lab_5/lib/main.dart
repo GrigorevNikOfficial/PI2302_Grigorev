@@ -106,10 +106,25 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: .center,
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            Text('Выберите список для просмотра:'),
+            SizedBox(height: 16),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Text('Простой список'),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    title: const Text('Бесконечный список'),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    title: const Text('Степени числа 2'),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
