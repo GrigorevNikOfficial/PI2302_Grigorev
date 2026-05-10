@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,6 +59,31 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 27;
   bool _isLiked = false;
 
+  Future<void> _makeCall() async {
+    const phone = '+79180000000';
+    final uri = Uri(scheme: 'tel', path: phone);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _openRoute() async {
+    final uri = Uri.https('www.google.com', '/maps/dir/', {
+      'api': '1',
+      'destination': 'Краснодар, ул. Калинина, 13',
+    });
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _shareInfo(BuildContext context) async {
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box == null
+        ? null
+        : box.localToGlobal(Offset.zero) & box.size;
+    await Share.share(
+      'Общежитие №20, Краснодар, ул. Калинина, 13',
+      sharePositionOrigin: origin,
+    );
+  }
+
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -64,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      
+
       if (_isLiked) {
         _counter = 27;
         _isLiked = false;
@@ -72,7 +99,6 @@ class _MyHomePageState extends State<MyHomePage> {
         _counter = 28;
         _isLiked = true;
       }
-
     });
   }
 
@@ -161,32 +187,49 @@ class _MyHomePageState extends State<MyHomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Column(
-                          children: [
-                            Icon(Icons.call, color: mainColor),
-                            SizedBox(height: 6),
-                            Text(
-                              'ПОЗВОНИТЬ',
-                              style: TextStyle(color: mainColor),
-                            ),
-                          ],
+                        TextButton(
+                          onPressed: _makeCall,
+                          style: TextButton.styleFrom(
+                            foregroundColor: mainColor,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.call),
+                              SizedBox(height: 6),
+                              Text('ПОЗВОНИТЬ', style: TextStyle(fontSize: 12)),
+                            ],
+                          ),
                         ),
-                        Column(
-                          children: [
-                            Icon(Icons.near_me, color: mainColor),
-                            SizedBox(height: 6),
-                            Text('МАРШРУТ', style: TextStyle(color: mainColor)),
-                          ],
+                        TextButton(
+                          onPressed: _openRoute,
+                          style: TextButton.styleFrom(
+                            foregroundColor: mainColor,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.near_me),
+                              SizedBox(height: 6),
+                              Text('МАРШРУТ', style: TextStyle(fontSize: 12)),
+                            ],
+                          ),
                         ),
-                        Column(
-                          children: [
-                            Icon(Icons.share, color: mainColor),
-                            SizedBox(height: 6),
-                            Text(
-                              'ПОДЕЛИТЬСЯ',
-                              style: TextStyle(color: mainColor),
+                        Builder(
+                          builder: (context) => TextButton(
+                            onPressed: () => _shareInfo(context),
+                            style: TextButton.styleFrom(
+                              foregroundColor: mainColor,
                             ),
-                          ],
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.share),
+                                SizedBox(height: 6),
+                                Text('ПОДЕЛИТЬСЯ', style: TextStyle(fontSize: 12)),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
