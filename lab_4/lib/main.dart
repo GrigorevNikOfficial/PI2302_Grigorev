@@ -148,6 +148,39 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ],
                     ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Column(
+                          children: [
+                            Icon(Icons.call, color: mainColor),
+                            SizedBox(height: 6),
+                            Text(
+                              'ПОЗВОНИТЬ',
+                              style: TextStyle(color: mainColor),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Icon(Icons.near_me, color: mainColor),
+                            SizedBox(height: 6),
+                            Text('МАРШРУТ', style: TextStyle(color: mainColor)),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Icon(Icons.share, color: mainColor),
+                            SizedBox(height: 6),
+                            Text(
+                              'ПОДЕЛИТЬСЯ',
+                              style: TextStyle(color: mainColor),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
