@@ -3,7 +3,7 @@ import './classes/Enums.dart';
 import './classes/Machine.dart';
 import './classes/Resources.dart';
 
-void main() {
+Future<void> main() async {
   const int initialCoffeeBeans = 150;
   const int initialMilk = 100;
   const int initialWater = 200;
@@ -24,7 +24,7 @@ void main() {
 
     switch (input) {
       case "1":
-        _makeCoffee(machine);
+        await _makeCoffee(machine);
         break;
 
       case "2":
@@ -49,14 +49,14 @@ void _printMenu() {
   stdout.write('Введите номер команды: ');
 }
 
-void _makeCoffee(Machine machine) {
+Future<void> _makeCoffee(Machine machine) async {
   final type = _readCoffeeType();
   if (type == null) {
     print("Неверный выбор.\n");
     return;
   }
 
-  final isMade = machine.makeCoffeeByType(type);
+  final isMade = await machine.makeCoffeeByType(type);
   if (isMade) {
     print("Кофе готов!\n");
   } else {
