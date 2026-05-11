@@ -1,3 +1,4 @@
+import './AsyncMethods.dart';
 import './Coffee.dart';
 import './Enums.dart';
 import './ICoffee.dart';
@@ -30,7 +31,7 @@ class Machine {
         _resources.water >= coffee.water();
   }
 
-  bool makeCoffee(ICoffee coffee) {
+  Future<bool> makeCoffee(ICoffee coffee) async {
     if (!isAvailableResources(coffee)) {
       return false;
     }
@@ -38,11 +39,15 @@ class Machine {
     _resources.coffeeBeans -= coffee.coffeeBeans();
     _resources.milk -= coffee.milk();
     _resources.water -= coffee.water();
+
+    final process = CoffeeProcess.start(withMilk: coffee.milk() > 0);
+    await process.done;
+
     _resources.cash += coffee.cash();
     return true;
   }
 
-  bool makeCoffeeByType(CoffeeType type) {
+  Future<bool> makeCoffeeByType(CoffeeType type) {
     final coffee = _coffeeByType(type);
     return makeCoffee(coffee);
   }
@@ -50,11 +55,11 @@ class Machine {
   ICoffee _coffeeByType(CoffeeType type) {
     switch (type) {
       case CoffeeType.espresso:
-        return Espresso();
+        return const Espresso();
       case CoffeeType.cappuccino:
-        return Cappuccino();
+        return const Cappuccino();
       case CoffeeType.americano:
-        return Americano();
+        return const Americano();
     }
   }
 }
