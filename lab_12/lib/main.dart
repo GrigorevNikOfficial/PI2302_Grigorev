@@ -1,121 +1,244 @@
 import 'package:flutter/material.dart';
 
+import 'coffee_machine/coffee.dart';
+import 'coffee_machine/enums.dart';
+import 'coffee_machine/i_coffee.dart';
+import 'coffee_machine/machine.dart';
+import 'coffee_machine/resources.dart';
+import 'pages/coffee_page.dart';
+import 'pages/resources_page.dart';
+import 'theme/app_colors.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(const CoffeeApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CoffeeApp extends StatelessWidget {
+  const CoffeeApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Coffee Machine',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.appBar),
+        scaffoldBackgroundColor: AppColors.background,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const CoffeeHome(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class CoffeeHome extends StatefulWidget {
+  const CoffeeHome({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CoffeeHome> createState() => _CoffeeHomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _CoffeeHomeState extends State<CoffeeHome> {
+  late final Machine _machine;
+  CoffeeType _selectedType = CoffeeType.espresso;
+  int _userMoney = 0;
+  bool _isBrewing = false;
+  final int _initialCoffeeBeans = 250;
+  final int _initialMilk = 250;
+  final int _initialWater = 250;
+  final int _initialCash = 0;
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    super.initState();
+    _machine = Machine(
+      Resources(
+        coffeeBeans: _initialCoffeeBeans,
+        milk: _initialMilk,
+        water: _initialWater,
+        cash: _initialCash,
+      ),
+    );
+  }
+
+  ICoffee _recipeForType(CoffeeType type) {
+    switch (type) {
+      case CoffeeType.espresso:
+        return const Espresso();
+      case CoffeeType.cappuccino:
+        return const Cappuccino();
+      case CoffeeType.americano:
+        return const Americano();
+    }
+  }
+
+  void _showSnack(BuildContext context, String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+      );
+  }
+
+  Future<void> _brewCoffee(BuildContext context) async {
+    if (_isBrewing) {
+      return;
+    }
+
+    final recipe = _recipeForType(_selectedType);
+    if (_userMoney < recipe.cash()) {
+      _showSnack(context, 'Not enough money.');
+      return;
+    }
+
+    if (!_machine.isAvailableResources(recipe)) {
+      _showSnack(context, 'Not enough resources.');
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _isBrewing = true;
     });
+
+    final dialog = showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const _BrewingDialog(),
+    );
+
+    final ok = await _machine.makeCoffee(recipe);
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.of(context, rootNavigator: true).pop();
+    await dialog;
+
+    setState(() {
+      if (ok) {
+        _userMoney -= recipe.cash();
+      }
+      _isBrewing = false;
+    });
+
+    _showSnack(context, ok ? 'Coffee is ready.' : 'Not enough resources.');
+  }
+
+  bool _addMoney(BuildContext context, int amount) {
+    if (amount <= 0) {
+      _showSnack(context, 'Enter a positive amount.');
+      return false;
+    }
+
+    setState(() {
+      _userMoney += amount;
+    });
+
+    _showSnack(context, 'Added $amount.');
+    return true;
+  }
+
+  void _refundMoney(BuildContext context) {
+    if (_userMoney == 0) {
+      _showSnack(context, 'No money to refund.');
+      return;
+    }
+
+    final refunded = _userMoney;
+    setState(() {
+      _userMoney = 0;
+    });
+
+    _showSnack(context, 'Refunded $refunded.');
+  }
+
+  bool _fillResources(
+    BuildContext context, {
+    required int coffeeBeans,
+    required int milk,
+    required int water,
+    required int cash,
+  }) {
+    if (coffeeBeans <= 0 && milk <= 0 && water <= 0 && cash <= 0) {
+      _showSnack(context, 'Enter at least one value.');
+      return false;
+    }
+
+    _machine.fillResources(
+      coffeeBeans: coffeeBeans,
+      milk: milk,
+      water: water,
+      cash: cash,
+    );
+
+    _showSnack(context, 'Resources updated.');
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Coffee Machine'),
+          backgroundColor: AppColors.appBar,
+          foregroundColor: Colors.white,
+          bottom: const TabBar(
+            indicatorColor: Colors.white,
+            tabs: [
+              Tab(icon: Icon(Icons.local_cafe)),
+              Tab(icon: Icon(Icons.inventory_2)),
+            ],
+          ),
+        ),
+        body: SafeArea(
+          child: TabBarView(
+            children: [
+              CoffeePage(
+                resources: _machine.resources,
+                userMoney: _userMoney,
+                selectedType: _selectedType,
+                isBrewing: _isBrewing,
+                onTypeChanged: (type) {
+                  setState(() {
+                    _selectedType = type;
+                  });
+                },
+                onBrew: _brewCoffee,
+                onAddMoney: _addMoney,
+                onRefundMoney: _refundMoney,
+              ),
+              ResourcesPage(
+                resources: _machine.resources,
+                onFillResources: _fillResources,
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+}
+
+class _BrewingDialog extends StatelessWidget {
+  const _BrewingDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(strokeWidth: 3),
+          ),
+          SizedBox(width: 12),
+          Text('Brewing coffee...'),
+        ],
       ),
     );
   }
