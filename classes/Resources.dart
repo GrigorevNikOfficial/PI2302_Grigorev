@@ -14,6 +14,13 @@ class Resources {
        _water = water,
        _cash = cash;
 
+  void add({int coffeeBeans = 0, int milk = 0, int water = 0, int cash = 0}) {
+    _coffeeBeans += coffeeBeans;
+    _milk += milk;
+    _water += water;
+    _cash += cash;
+  }
+
   int get coffeeBeans => _coffeeBeans;
   set coffeeBeans(int value) => _coffeeBeans = value;
 

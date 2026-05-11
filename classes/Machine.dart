@@ -1,55 +1,60 @@
+import './Coffee.dart';
+import './Enums.dart';
+import './ICoffee.dart';
+import './Resources.dart';
+
 class Machine {
+  final Resources _resources;
 
-  static const int COFFEE_BEANS_FOR_EXPRESSO = 50;
-  static const int WATER_FOR_EXPRESSO = 100;
-  
-  int _coffeeBeans;
-  int _milk;
-  int _water;
-  int _cash;
+  Machine(this._resources);
 
-  Machine(this._coffeeBeans, this._milk, this._water, this._cash);
+  Resources get resources => _resources;
 
-  int get coffeeBeans {return _coffeeBeans;}
-  set coffeeBeans(int value) {
-    _coffeeBeans = value;
+  void fillResources({
+    int coffeeBeans = 0,
+    int milk = 0,
+    int water = 0,
+    int cash = 0,
+  }) {
+    _resources.add(
+      coffeeBeans: coffeeBeans,
+      milk: milk,
+      water: water,
+      cash: cash,
+    );
   }
 
-  int get milk {return _milk;}
-  set milk(int value) {
-    _milk = value;
+  bool isAvailableResources(ICoffee coffee) {
+    return _resources.coffeeBeans >= coffee.coffeeBeans() &&
+        _resources.milk >= coffee.milk() &&
+        _resources.water >= coffee.water();
   }
 
-  int get water {return _water;}
-  set water (int value) {
-    _water = value;
-  }
-
-  int get cash {return _cash;}
-  set cash (int value) {
-    _cash = value;
-  }
-
-  bool isAvailable() {
-    return _coffeeBeans >= COFFEE_BEANS_FOR_EXPRESSO && _water >= WATER_FOR_EXPRESSO;
-  }
-
-  void _substractResources() {
-      _coffeeBeans -= COFFEE_BEANS_FOR_EXPRESSO;
-      _water -= WATER_FOR_EXPRESSO;
-  }
-
-  bool makingCoffee() {
-    if (isAvailable()) {
-      _substractResources();
-      return true;
+  bool makeCoffee(ICoffee coffee) {
+    if (!isAvailableResources(coffee)) {
+      return false;
     }
-    return false;
+
+    _resources.coffeeBeans -= coffee.coffeeBeans();
+    _resources.milk -= coffee.milk();
+    _resources.water -= coffee.water();
+    _resources.cash += coffee.cash();
+    return true;
   }
 
-  void addResources(int coffeeBeans, int water) {
-    _coffeeBeans += coffeeBeans;
-    _water += water;
+  bool makeCoffeeByType(CoffeeType type) {
+    final coffee = _coffeeByType(type);
+    return makeCoffee(coffee);
   }
 
+  ICoffee _coffeeByType(CoffeeType type) {
+    switch (type) {
+      case CoffeeType.espresso:
+        return Espresso();
+      case CoffeeType.cappuccino:
+        return Cappuccino();
+      case CoffeeType.americano:
+        return Americano();
+    }
+  }
 }

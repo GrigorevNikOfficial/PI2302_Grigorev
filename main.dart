@@ -1,5 +1,7 @@
 import 'dart:io';
+import './classes/Enums.dart';
 import './classes/Machine.dart';
+import './classes/Resources.dart';
 
 void main() {
 
