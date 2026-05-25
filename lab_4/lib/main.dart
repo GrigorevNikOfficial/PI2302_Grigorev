@@ -13,7 +13,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Общежития КубГАУ',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.green)),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+      ),
       home: const MyHomePage(title: 'Общежития КубГАУ'),
     );
   }
@@ -116,7 +118,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         IconButton(
                           onPressed: _incrementCounter,
-                          icon: const Icon(Icons.favorite, color: Colors.red),
+                          icon: Icon(
+                            Icons.favorite,
+                            color: _isLiked ? Colors.red : Colors.grey,
+                          ),
                           tooltip: 'Лайк',
                         ),
                         Text(
